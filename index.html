@@ -1,21 +1,11 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <meta
-      http-equiv="X-Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'"
-    />
-    <title>来自 Electron 渲染器的问好！</title>
-  </head>
-  <body>
-    <h1>来自 Electron 渲染器的问好！</h1>
-    <p>👋</p>
-    <p id="info"></p>
-  </body>
+<body>
+  <p id="info"></p>
+  <button id="readBtn">读取文件</button>
+  <div id="result"></div>
+
+  <!-- 引入外部渲染进程脚本 -->
   <script src="./renderer.js"></script>
+</body>
 </html>
