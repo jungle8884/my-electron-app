@@ -6,7 +6,7 @@ const path = require('path'); // 需顶部引入 path 模块
 module.exports = {
   packagerConfig: {
   asar: true,
-  icon: path.resolve(__dirname, './assets/icon'),
+  icon: path.resolve(__dirname, './assets/icon.ico'), // Windows 图标
   ignore: [
     /^\/\.git/, // 忽略 git 目录
     /^\/node_modules\/\.cache/, // 忽略 npm 缓存
