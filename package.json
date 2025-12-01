@@ -25,6 +25,7 @@
     "electron": "^39.2.3"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "electron-squirrel-startup": "^1.0.1",
+    "serialport": "^13.0.0"
   }
 }

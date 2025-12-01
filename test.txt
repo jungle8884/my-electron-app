@@ -1,2 +1,4 @@
 Hello Electron!
 这是测试文件的内容。
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+npm install serialport --save
