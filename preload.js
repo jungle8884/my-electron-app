@@ -8,6 +8,18 @@ contextBridge.exposeInMainWorld('versions', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  readFile: (filePath) => ipcRenderer.invoke('read-file-request', filePath)
+  // 原有文件读取功能
+  readFile: (filePath) => ipcRenderer.invoke('read-file-request', filePath),
+  
+  // 串口相关功能
+  getSerialPorts: () => ipcRenderer.invoke('get-serial-ports'),
+  connectSerial: (portConfig) => ipcRenderer.invoke('connect-serial', portConfig),
+  disconnectSerial: () => ipcRenderer.invoke('disconnect-serial'),
+  sendSerialData: (data) => ipcRenderer.invoke('send-serial-data', data),
+  
+  // 事件监听
+  onSerialData: (callback) => ipcRenderer.on('serial-data', callback),
+  onPortsUpdated: (callback) => ipcRenderer.on('ports-updated', callback),
+  onConnectionStatus: (callback) => ipcRenderer.on('connection-status', callback)
 });
 

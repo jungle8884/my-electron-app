@@ -1,9 +1,273 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>串口工具</title>
+  <script type="text/javascript" src="./js/vue.js" ></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    #app {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .section h2 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #555;
+    }
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    .setting-item {
+      display: flex;
+      flex-direction: column;
+    }
+    .setting-item label {
+      font-size: 12px;
+      margin-bottom: 5px;
+      color: #666;
+    }
+    .setting-item select, .setting-item input {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    .btn-connect {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .btn-connect:hover {
+      background-color: #45a049;
+    }
+    .btn-disconnect {
+      background-color: #f44336;
+      color: white;
+    }
+    .btn-disconnect:hover {
+      background-color: #da190b;
+    }
+    .btn-send {
+      background-color: #2196F3;
+      color: white;
+    }
+    .btn-send:hover {
+      background-color: #0b7dda;
+    }
+    .btn-clear {
+      background-color: #9E9E9E;
+      color: white;
+    }
+    .btn-clear:hover {
+      background-color: #757575;
+    }
+    .message-area {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+    }
+    .input-area textarea {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      min-height: 80px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    .output-area {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .output-area label {
+      font-size: 12px;
+      color: #666;
+    }
+    .output-area pre {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .status-bar {
+      margin-top: 15px;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+    }
+    .status-connected {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+    .status-disconnected {
+      color: #f44336;
+      font-weight: bold;
+    }
+  </style>
+</head>
 <body>
-  <p id="info"></p>
-  <button id="readBtn">读取文件</button>
-  <div id="result"></div>
+  <div id="app">
+    <h1>串口工具</h1>
+    
+    <!-- 串口设置区域 -->
+    <div class="section">
+      <h2>串口设置</h2>
+      <div class="settings-grid">
+        <div class="setting-item">
+          <label for="port">端口</label>
+          <div style="display: flex; gap: 5px;">
+            <select v-model="selectedPort" id="port" @change="handlePortChange" style="flex: 1;">
+              <option v-for="p in ports" :key="p" :value="p">{{ p }}</option>
+              <option value="custom">自定义</option>
+            </select>
+            <input v-if="selectedPort === 'custom'" v-model="customPort" type="text" placeholder="自定义端口" style="width: 120px;" @input="handleCustomPortChange" />
+          </div>
+        </div>
+        <div class="setting-item">
+          <label for="baudRate">波特率</label>
+          <div style="display: flex; gap: 5px;">
+            <select v-model="selectedBaudRate" id="baudRate" @change="handleBaudRateChange" style="flex: 1;">
+              <option value="1200">1200</option>
+              <option value="2400">2400</option>
+              <option value="4800">4800</option>
+              <option value="9600">9600</option>
+              <option value="19200">19200</option>
+              <option value="38400">38400</option>
+              <option value="57600">57600</option>
+              <option value="115200" selected>115200</option>
+              <option value="230400">230400</option>
+              <option value="460800">460800</option>
+              <option value="921600">921600</option>
+              <option value="1000000">1000000</option>
+              <option value="custom">自定义</option>
+            </select>
+            <input v-if="selectedBaudRate === 'custom'" v-model="customBaudRate" type="number" placeholder="自定义" min="1" style="width: 100px;" @input="handleCustomBaudRateChange" />
+          </div>
+        </div>
+        <div class="setting-item">
+          <label for="dataBits">数据位</label>
+          <select v-model="dataBits" id="dataBits">
+            <option value="8" selected>8</option>
+            <option value="7">7</option>
+            <option value="6">6</option>
+            <option value="5">5</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="stopBits">停止位</label>
+          <select v-model="stopBits" id="stopBits">
+            <option value="1" selected>1</option>
+            <option value="2">2</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="parity">校验位</label>
+          <select v-model="parity" id="parity">
+            <option value="none" selected>无</option>
+            <option value="even">偶校验</option>
+            <option value="odd">奇校验</option>
+          </select>
+        </div>
+        <div class="setting-item">
+          <label for="flowControl">流控</label>
+          <select v-model="flowControl" id="flowControl">
+            <option value="none" selected>无</option>
+            <option value="hardware">硬件</option>
+            <option value="software">软件</option>
+          </select>
+        </div>
+      </div>
+      <div class="button-group">
+        <button v-if="!isConnected" @click="connect" class="btn-connect">连接</button>
+        <button v-else @click="disconnect" class="btn-disconnect">断开连接</button>
+        <button @click="refreshPorts" class="btn-clear">刷新端口</button>
+      </div>
+    </div>
+    
+    <!-- 消息发送和接收区域 -->
+    <div class="section">
+      <h2>消息收发</h2>
+      <div class="message-area">
+        <div class="input-area">
+          <textarea v-model="sendMessage" placeholder="输入要发送的指令..." @keyup.enter="send"></textarea>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button @click="send" class="btn-send" :disabled="!isConnected">发送</button>
+            <button @click="clearOutput" class="btn-clear">清空</button>
+          </div>
+        </div>
+        <div class="output-area">
+          <label>接收消息：</label>
+          <pre>{{ outputMessages }}</pre>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 状态栏 -->
+    <div class="status-bar">
+      <span>状态：</span>
+      <span v-if="isConnected" class="status-connected">已连接</span>
+      <span v-else class="status-disconnected">未连接</span>
+      <span v-if="isConnected"> | 端口：{{ port }} | 波特率：{{ baudRate }}</span>
+    </div>
+  </div>
 
   <!-- 引入外部渲染进程脚本 -->
   <script src="./renderer.js"></script>
