@@ -36,15 +36,24 @@ function initSerialPort() {
 }
 
 // 获取可用串口列表
+/**
+ * 获取可用的串口列表
+ * 该函数首先初始化串口，然后尝试获取所有可用的串口路径
+ * @returns {Promise<string[]>} 返回串口路径数组，如果初始化失败或获取串口列表失败则返回空数组
+ */
 async function getSerialPorts() {
+  // 检查并初始化串口，如果初始化失败则直接返回空数组
   if (!initSerialPort()) {
     return [];
   }
   
   try {
+    // 获取所有串口信息，并提取每个串口的路径
     const ports = await SerialPort.SerialPort.list();
+    // 将串口信息映射为仅包含路径的数组
     return ports.map(port => port.path);
   } catch (error) {
+    // 捕获并打印错误信息，返回空数组
     console.error('Failed to get serial ports:', error);
     return [];
   }
