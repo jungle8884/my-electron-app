@@ -24,7 +24,15 @@ const app = new Vue({
     
     // 消息
     sendMessage: '',
-    outputMessages: ''
+    outputMessages: '',
+    
+    // 指令序列发送
+    sequenceMode: false,
+    sequenceCommands: '',
+    selectedFilePath: '',
+    
+    // 接收编码设置
+    encoding: 'utf8'
   },
   mounted() {
     // 初始化时刷新端口列表
@@ -32,7 +40,33 @@ const app = new Vue({
     
     // 监听来自主进程的串口数据
     window.electronAPI.onSerialData((event, data) => {
-      this.outputMessages += `[${new Date().toLocaleTimeString()}] ${data}\n`;
+      let formattedData = data;
+      // 根据选择的编码格式处理数据
+      if (typeof data === 'string') {
+        // 如果数据已经是字符串，直接使用
+        formattedData = data;
+      } else if (Buffer.isBuffer(data)) {
+        // 如果是Buffer对象，根据选择的编码格式转换
+        switch (this.encoding) {
+          case 'utf8':
+            formattedData = data.toString('utf8');
+            break;
+          case 'ascii':
+            formattedData = data.toString('ascii');
+            break;
+          case 'latin1':
+            formattedData = data.toString('latin1');
+            break;
+          case 'hex':
+            formattedData = data.toString('hex').toUpperCase();
+            // 每2个字符添加一个空格，方便阅读
+            formattedData = formattedData.replace(/(..)/g, '$1 ').trim();
+            break;
+          default:
+            formattedData = data.toString('utf8');
+        }
+      }
+      this.outputMessages += `[${new Date().toLocaleTimeString()}] ${formattedData}\n`;
     });
     
     // 监听端口更新
@@ -147,9 +181,14 @@ const app = new Vue({
       }
       
       try {
-        await window.electronAPI.sendSerialData(this.sendMessage);
-        this.outputMessages += `[${new Date().toLocaleTimeString()}] 发送: ${this.sendMessage}\n`;
-        this.sendMessage = '';
+        const success = await window.electronAPI.sendSerialData(this.sendMessage);
+        if (success) {
+          this.outputMessages += `[${new Date().toLocaleTimeString()}] 发送: ${this.sendMessage}\n`;
+          this.outputMessages += `[${new Date().toLocaleTimeString()}] 指令发送成功，等待设备返回数据...\n`;
+          this.sendMessage = '';
+        } else {
+          this.outputMessages += `[${new Date().toLocaleTimeString()}] 发送失败: 指令发送失败\n`;
+        }
       } catch (error) {
         console.error('发送失败:', error);
         this.outputMessages += `[${new Date().toLocaleTimeString()}] 发送失败: ${error.message}\n`;
@@ -159,6 +198,82 @@ const app = new Vue({
     // 清空输出
     clearOutput() {
       this.outputMessages = '';
+    },
+    
+    // 处理文件选择
+    handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.sequenceCommands = e.target.result;
+          this.selectedFilePath = file.name;
+          this.outputMessages += `[${new Date().toLocaleTimeString()}] 已加载指令文件：${file.name}\n`;
+        };
+        reader.readAsText(file);
+      }
+    },
+    
+    // 更新编码设置
+    updateEncoding() {
+      // 编码设置通过Vue双向绑定自动更新，此方法用于扩展功能
+    },
+    
+    // 发送指令序列
+    async sendSequence() {
+      if (!this.isConnected || !this.sequenceMode) {
+        return;
+      }
+      
+      try {
+        // 分割指令列表，过滤空行和注释行
+        const commands = this.sequenceCommands
+          .split('\n')
+          .map(cmd => cmd.trim())
+          .filter(cmd => {
+            // 过滤空行和以#开头的注释行
+            return cmd.length > 0 && !cmd.startsWith('#');
+          });
+        
+        if (commands.length === 0) {
+          this.outputMessages += `[${new Date().toLocaleTimeString()}] 没有可发送的指令\n`;
+          return;
+        }
+        
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 开始发送指令序列，共 ${commands.length} 条指令\n`;
+        
+        // 逐条发送指令
+        for (let i = 0; i < commands.length; i++) {
+          const cmd = commands[i];
+          
+          // 记录发送时间
+          const sendTime = new Date();
+          this.outputMessages += `[${sendTime.toLocaleTimeString()}] 发送序列指令 ${i + 1}/${commands.length}：${cmd}\n`;
+          
+          // 发送指令
+          const success = await window.electronAPI.sendSerialData(cmd);
+          
+          if (success) {
+            this.outputMessages += `[${new Date().toLocaleTimeString()}] 指令发送成功，等待设备返回数据...\n`;
+          } else {
+            this.outputMessages += `[${new Date().toLocaleTimeString()}] 指令发送失败\n`;
+          }
+          
+          // 增加发送间隔时间，给设备足够的时间处理和返回数据
+          // 从100ms增加到500ms
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 指令序列发送完成\n`;
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 提示：如果没有接收到返回数据，请检查：\n`;
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 1. 设备是否正常工作\n`;
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 2. 指令格式是否正确\n`;
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 3. 串口连接是否稳定\n`;
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 4. 编码格式是否正确\n`;
+      } catch (error) {
+        console.error('发送序列失败:', error);
+        this.outputMessages += `[${new Date().toLocaleTimeString()}] 发送序列失败: ${error.message}\n`;
+      }
     }
   }
 });

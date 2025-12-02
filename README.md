@@ -20,6 +20,8 @@ npm init
 
 ```npm
 npm install electron --save-dev
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+npm install serialport --save
 ```
 
 **package.json**

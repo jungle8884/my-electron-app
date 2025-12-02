@@ -83,7 +83,8 @@ function connectSerial(portConfig, window) {
     
     // 监听数据接收
     serialPortInstance.on('data', (data) => {
-      window.webContents.send('serial-data', data.toString());
+      // 发送原始Buffer数据，让渲染进程根据选择的编码格式进行转换
+      window.webContents.send('serial-data', data);
     });
     
     // 监听错误
@@ -119,10 +120,24 @@ function disconnectSerial() {
 // 发送串口数据
 function sendSerialData(data) {
   if (serialPortInstance && serialPortInstance.isOpen) {
-    serialPortInstance.write(data + '\n');
-    return true;
+    try {
+      // 使用Promise处理异步write操作
+      return new Promise((resolve) => {
+        serialPortInstance.write(data + '\n', (error) => {
+          if (error) {
+            console.error('Failed to write data:', error);
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Error in sendSerialData:', error);
+      return Promise.resolve(false);
+    }
   }
-  return false;
+  return Promise.resolve(false);
 }
 
 // 监听渲染进程的请求

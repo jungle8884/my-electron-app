@@ -260,6 +260,36 @@
       </div>
     </div>
     
+    <!-- 指令序列发送区域 -->
+    <div class="section">
+      <h2>指令序列发送</h2>
+      <div class="setting-item" style="flex-direction: row; align-items: center; gap: 10px; margin-bottom: 15px;">
+        <label for="sequenceMode">启用序列发送：</label>
+        <input type="checkbox" v-model="sequenceMode" id="sequenceMode" style="width: auto; margin-right: 15px;">
+        <label for="sequenceFile" style="margin-right: 10px;">选择指令文件：</label>
+        <input type="file" id="sequenceFile" accept=".txt" @change="handleFileSelect" style="margin-right: 15px;">
+        <button @click="sendSequence" class="btn-send" :disabled="!isConnected || !sequenceMode">发送序列</button>
+      </div>
+      <div v-if="sequenceMode" style="margin-top: 15px;">
+        <label>指令列表：</label>
+        <textarea v-model="sequenceCommands" placeholder="指令列表（每行一条指令）" style="width: 100%; margin-top: 10px; min-height: 120px;"></textarea>
+      </div>
+    </div>
+    
+    <!-- 编码设置区域 -->
+    <div class="section">
+      <h2>接收编码设置</h2>
+      <div class="setting-item" style="flex-direction: row; align-items: center; gap: 10px;">
+        <label for="encoding">接收数据编码：</label>
+        <select v-model="encoding" id="encoding" @change="updateEncoding">
+          <option value="utf8">UTF-8</option>
+          <option value="ascii">ASCII</option>
+          <option value="latin1">Latin1</option>
+          <option value="hex">HEX (十六进制)</option>
+        </select>
+      </div>
+    </div>
+    
     <!-- 状态栏 -->
     <div class="status-bar">
       <span>状态：</span>
