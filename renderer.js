@@ -3,7 +3,12 @@ const readBtn = document.getElementById('readBtn');
 const resultDiv = document.getElementById('result');
 
 const information = document.getElementById('info')
-information.innerText = `本应用正在使用 Chrome (v${versions.chrome()}), Node.js (v${versions.node()}), 和 Electron (v${versions.electron()})`
+// 添加安全检查，确保versions对象存在
+if (window.versions && typeof window.versions === 'object') {
+  information.innerText = `本应用正在使用 Chrome (v${window.versions.chrome()}), Node.js (v${window.versions.node()}), 和 Electron (v${window.versions.electron()})`
+} else {
+  information.innerText = '本应用正在浏览器中运行，无法获取Electron环境信息'
+}
 
 // 加载状态处理
 readBtn.addEventListener('click', async () => {
@@ -13,7 +18,14 @@ readBtn.addEventListener('click', async () => {
   resultDiv.textContent = '';
 
   try {
-    const response = await window.electronAPI.readFile('./test.txt');
+    // 添加安全检查，确保electronAPI存在
+    if (!window.electronAPI || typeof window.electronAPI.readFile !== 'function') {
+      resultDiv.style.color = 'red';
+      resultDiv.textContent = '错误：当前环境不支持文件读取功能（请在Electron应用中运行）';
+      return;
+    }
+    
+    const response = await window.electronAPI.readFile('./config.json');
     
     if (response.success) {
       // 格式化显示文本（保留换行）

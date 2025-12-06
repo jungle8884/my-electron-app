@@ -7,6 +7,8 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    frame: true, // 隐藏默认的标题栏和窗口框架
+    autoHideMenuBar: true, // 自动隐藏菜单栏
     webPreferences: {
       contextIsolation: true, // 开启上下文隔离（安全）
       nodeIntegration: false, // 关闭渲染进程的 Node.js 集成

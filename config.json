@@ -1,0 +1,7 @@
+{
+  "Serial": "COM3",
+  "BaudRate": "921600",
+  "DataBits": "8",
+  "StopBits": "1",
+  "Parity": "None"
+}
