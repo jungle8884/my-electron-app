@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('versions', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  readFile: (filePath) => ipcRenderer.invoke('read-file-request', filePath)
+  readFile: (filePath) => ipcRenderer.invoke('read-file-request', filePath),
+  downloadFireWare: () => ipcRenderer.invoke('download-fireware', fileDir),
 });
 

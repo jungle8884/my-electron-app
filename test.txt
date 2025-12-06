@@ -1,2 +1,0 @@
-Hello Electron!
-这是测试文件的内容。

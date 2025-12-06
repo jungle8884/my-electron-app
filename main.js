@@ -29,4 +29,21 @@ ipcMain.handle('read-file-request', async (event, filePath) => {
   }
 });
 
+ipcMain.handle('download-fireware', async (event, fileDir) => {
+  try {
+    // 读取 res\testmode20_2023_0718_1234.bin 固件并通过 XModem 下载固件
+    /**
+     * 步骤如下:
+     * 1 读取 config.json 配置文件, 打开串口配置
+     * 2 发送命令: x 160000 使设备进入XModem接收模式: 'Receiving XModem'
+     * 3 开始发送固件文件: res/testmode20_2023_0718_1234.bin
+     * 4 固件发送中在对应文本框中打印进度信息
+     * 5 固件发送完成后, 发送执行命令: g 160000, 进入测试模式
+     * 6 检测到: 'mac', 'set mac' 表示结束
+    */
+  } catch (error) {
+    
+  }
+});
+
 app.whenReady().then(createWindow);
