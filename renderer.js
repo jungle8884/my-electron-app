@@ -7,6 +7,7 @@ window.addEventListener('load', () => {
     document.getElementById('downloadFireWareBtn').click();
   }, 2000);
 });
+
 const readBtn = document.getElementById('readBtn');
 const resultDiv = document.getElementById('result');
 const downloadFireWareBtn = document.getElementById('downloadFireWareBtn');
@@ -63,7 +64,7 @@ downloadFireWareBtn.addEventListener('click', async () => {
   // Disable button to prevent duplicate clicks
   downloadFireWareBtn.disabled = true;
   downloadFireWareBtn.textContent = 'Downloading...';
-  downloadFireWareResultDiv.textContent = '';
+  downloadFireWareResultDiv.textContent = '正在下载固件...\n';
 
   try {
     // Add security check to ensure electronAPI exists
@@ -78,16 +79,17 @@ downloadFireWareBtn.addEventListener('click', async () => {
     if (response.success) {
       // Format display text (preserve line breaks)
       downloadFireWareResultDiv.style.whiteSpace = 'pre-wrap';
-      downloadFireWareResultDiv.textContent = `Download result:\n${response.content}`;
+      downloadFireWareResultDiv.textContent = response.logs;
     } else {
       // Error style prompt
       downloadFireWareResultDiv.style.color = 'red';
-      downloadFireWareResultDiv.textContent = `Error: ${response.error}`;
+      downloadFireWareResultDiv.style.whiteSpace = 'pre-wrap';
+      downloadFireWareResultDiv.textContent = response.logs + `\n下载失败: ${response.error}`;
     }
   } catch (err) {
     // Catch communication exceptions
     downloadFireWareResultDiv.style.color = 'red';
-    downloadFireWareResultDiv.textContent = `Communication error: ${err.message}`;
+    downloadFireWareResultDiv.textContent = `错误: ${err.message}`;
   } finally {
     // Restore button state
     downloadFireWareBtn.disabled = false;
