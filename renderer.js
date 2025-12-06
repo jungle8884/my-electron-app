@@ -1,4 +1,12 @@
-// renderer.js 增强版
+// Enhanced renderer.js
+// Add auto-download feature for testing purposes
+window.addEventListener('load', () => {
+  // Auto-trigger firmware download after 2 seconds
+  setTimeout(() => {
+    console.log('Auto-triggering firmware download...');
+    document.getElementById('downloadFireWareBtn').click();
+  }, 2000);
+});
 const readBtn = document.getElementById('readBtn');
 const resultDiv = document.getElementById('result');
 const downloadFireWareBtn = document.getElementById('downloadFireWareBtn');
@@ -7,82 +15,119 @@ const testOrdersBtn = document.getElementById('testOrdersBtn');
 const testOrdersResultDiv = document.getElementById('testOrdersResult');
 
 const information = document.getElementById('info')
-// 添加安全检查，确保versions对象存在
+// Add security check to ensure versions object exists
 if (window.versions && typeof window.versions === 'object') {
-  information.innerText = `本应用正在使用 Chrome (v${window.versions.chrome()}), Node.js (v${window.versions.node()}), 和 Electron (v${window.versions.electron()})`
+  information.innerText = `This app is using Chrome (v${window.versions.chrome()}), Node.js (v${window.versions.node()}), and Electron (v${window.versions.electron()})`
 } else {
-  information.innerText = '本应用正在浏览器中运行，无法获取Electron环境信息'
+  information.innerText = 'This app is running in a browser, cannot get Electron environment information'
 }
 
-// 加载状态处理
+// Loading state handling
 readBtn.addEventListener('click', async () => {
-  // 禁用按钮，防止重复点击
+  // Disable button to prevent duplicate clicks
   readBtn.disabled = true;
-  readBtn.textContent = '读取中...';
+  readBtn.textContent = 'Reading...';
   resultDiv.textContent = '';
 
   try {
-    // 添加安全检查，确保electronAPI存在
+    // Add security check to ensure electronAPI exists
     if (!window.electronAPI || typeof window.electronAPI.readFile !== 'function') {
       resultDiv.style.color = 'red';
-      resultDiv.textContent = '错误：当前环境不支持文件读取功能（请在Electron应用中运行）';
+      resultDiv.textContent = 'Error: Current environment does not support file reading function (please run in Electron app)';
       return;
     }
     
     const response = await window.electronAPI.readFile('./config.json');
     
     if (response.success) {
-      // 格式化显示文本（保留换行）
+      // Format display text (preserve line breaks)
       resultDiv.style.whiteSpace = 'pre-wrap';
-      resultDiv.textContent = `文件内容：\n${response.content}`;
+      resultDiv.textContent = `File content:\n${response.content}`;
     } else {
-      // 错误样式提示
+      // Error style prompt
       resultDiv.style.color = 'red';
-      resultDiv.textContent = `错误：${response.error}`;
+      resultDiv.textContent = `Error: ${response.error}`;
     }
   } catch (err) {
-    // 捕获通信过程中的异常
+    // Catch communication exceptions
     resultDiv.style.color = 'red';
-    resultDiv.textContent = `通信错误：${err.message}`;
+    resultDiv.textContent = `Communication error: ${err.message}`;
   } finally {
-    // 恢复按钮状态
+    // Restore button state
     readBtn.disabled = false;
-    readBtn.textContent = '读取文件';
+    readBtn.textContent = 'Read File';
   }
 });
 
 downloadFireWareBtn.addEventListener('click', async () => {
-  // 禁用按钮，防止重复点击
+  // Disable button to prevent duplicate clicks
   downloadFireWareBtn.disabled = true;
-  downloadFireWareBtn.textContent = '下载中...';
+  downloadFireWareBtn.textContent = 'Downloading...';
   downloadFireWareResultDiv.textContent = '';
 
   try {
-    // 添加安全检查，确保electronAPI存在
+    // Add security check to ensure electronAPI exists
     if (!window.electronAPI || typeof window.electronAPI.downloadFireWare !== 'function') {
       downloadFireWareResultDiv.style.color = 'red';
-      downloadFireWareResultDiv.textContent = '错误：当前环境不支持固件下载功能（请在Electron应用中运行）';
+      downloadFireWareResultDiv.textContent = 'Error: Current environment does not support firmware download function (please run in Electron app)';
       return;
     }
     
     const response = await window.electronAPI.downloadFireWare('./res');
     
     if (response.success) {
-      // 格式化显示文本（保留换行）
+      // Format display text (preserve line breaks)
       downloadFireWareResultDiv.style.whiteSpace = 'pre-wrap';
-      downloadFireWareResultDiv.textContent = `下载结果：\n${response.content}`;
+      downloadFireWareResultDiv.textContent = `Download result:\n${response.content}`;
     } else {
-      // 错误样式提示
+      // Error style prompt
       downloadFireWareResultDiv.style.color = 'red';
-      downloadFireWareResultDiv.textContent = `错误：${response.error}`;
+      downloadFireWareResultDiv.textContent = `Error: ${response.error}`;
     }
   } catch (err) {
-    // 捕获通信过程中的异常
+    // Catch communication exceptions
     downloadFireWareResultDiv.style.color = 'red';
-    downloadFireWareResultDiv.textContent = `通信错误：${err.message}`;
+    downloadFireWareResultDiv.textContent = `Communication error: ${err.message}`;
   } finally {
-    // 恢复按钮状态
+    // Restore button state
     downloadFireWareBtn.disabled = false;
-    downloadFireWareBtn.textContent = '下载固件';
+    downloadFireWareBtn.textContent = 'Download Firmware';
+  }
+});
+
+// Test command button click event
+testOrdersBtn.addEventListener('click', async () => {
+  // Disable button to prevent duplicate clicks
+  testOrdersBtn.disabled = true;
+  testOrdersBtn.textContent = 'Testing...';
+  testOrdersResultDiv.textContent = '';
+
+  try {
+    // Add security check to ensure electronAPI exists
+    if (!window.electronAPI || typeof window.electronAPI.testOrders !== 'function') {
+      testOrdersResultDiv.style.color = 'red';
+      testOrdersResultDiv.textContent = 'Error: Current environment does not support test command function (please run in Electron app)';
+      return;
+    }
+    
+    const response = await window.electronAPI.testOrders();
+    
+    if (response.success) {
+      // Format display text (preserve line breaks)
+      testOrdersResultDiv.style.whiteSpace = 'pre-wrap';
+      testOrdersResultDiv.textContent = `Test result:\n${response.content}`;
+    } else {
+      // Error style prompt
+      testOrdersResultDiv.style.color = 'red';
+      testOrdersResultDiv.textContent = `Error: ${response.error}`;
+    }
+  } catch (err) {
+    // Catch communication exceptions
+    testOrdersResultDiv.style.color = 'red';
+    testOrdersResultDiv.textContent = `Communication error: ${err.message}`;
+  } finally {
+    // Restore button state
+    testOrdersBtn.disabled = false;
+    testOrdersBtn.textContent = 'Test Commands';
   }
 });

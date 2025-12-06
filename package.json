@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
-    "element-ui": "^2.15.14"
+    "element-ui": "^2.15.14",
+    "serialport": "^13.0.0",
+    "xmodem.js": "^0.1.0"
   }
 }
