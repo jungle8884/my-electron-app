@@ -1,42 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我的Electron应用</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Microsoft YaHei', Arial, sans-serif;
+      background-color: #f5f7fa;
       margin: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-size: 24px;
+    }
+
+    #info {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .function-group {
+      margin-bottom: 25px;
+      padding: 15px;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      background-color: #fafbfc;
+    }
+
+    .function-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .function-checkbox {
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    .function-label {
+      margin-right: 15px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .function-btn {
+      padding: 8px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .function-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .function-btn:active {
+      background-color: #004085;
+    }
+
+    .result-div {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: white;
+      border: 1px solid #e1e4e8;
+      border-radius: 4px;
+      min-height: 50px;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-y: auto;
+      max-height: 200px;
+    }
+
+    .execute-section {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e1e4e8;
+    }
+
+    #executeAllBtn {
+      padding: 10px 30px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+
+    #executeAllBtn:hover {
+      background-color: #218838;
+    }
+
+    #executeAllBtn:active {
+      background-color: #1e7e34;
+    }
+
+    #executeAllBtn:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
-  <p id="info"></p>
-  
-  <div>
-    <input type="checkbox" id="readCheckbox">
-    <label for="readCheckbox">读取文件</label>
-  </div>
-  <button id="readBtn">读取文件</button>
-  <div id="result"></div>
-  
-  <div>
-    <input type="checkbox" id="downloadCheckbox" checked>
-    <label for="downloadCheckbox">下载固件</label>
-  </div>
-  <button id="downloadFireWareBtn" title="下载固件">下载固件</button>
-  <div id="downloadFireWareResult"></div>
-  
-  <div>
-    <input type="checkbox" id="testCheckbox" checked>
-    <label for="testCheckbox">测试指令</label>
-  </div>
-  <button id="testOrdersBtn" title="测试指令">测试指令</button>
-  <div id="testOrdersResult"></div>
-  
-  <div>
-    <button id="executeAllBtn" title="依次执行选中的功能">依次执行选中的功能</button>
+  <div class="container">
+    <h1>Electron测试工具</h1>
+    
+    <p id="info"></p>
+    
+    <!-- 读取文件功能 -->
+    <div class="function-group">
+      <div class="function-header">
+        <label for="readCheckbox" class="function-label">读取文件</label>
+        <button id="readBtn" class="function-btn">读取文件</button>
+      </div>
+      <div id="result" class="result-div"></div>
+    </div>
+    
+    <!-- 下载固件功能 -->
+    <div class="function-group">
+      <div class="function-header">
+        <label for="downloadCheckbox" class="function-label">下载固件</label>
+        <button id="downloadFireWareBtn" class="function-btn" title="下载固件">下载固件</button>
+      </div>
+      <div id="downloadFireWareResult" class="result-div"></div>
+    </div>
+    
+    <!-- 测试指令功能 -->
+    <div class="function-group">
+      <div class="function-header">
+        <label for="testCheckbox" class="function-label">测试指令</label>
+        <button id="testOrdersBtn" class="function-btn" title="测试指令">测试指令</button>
+      </div>
+      <div id="testOrdersResult" class="result-div"></div>
+    </div>
+    
+    <!-- 显示是否PASS -->
+    <div class="execute-section">
+      <button id="executeAllBtn" title="测试结果">测试结果</button>
+    </div>
   </div>
 
   <!-- 引入外部渲染进程脚本 -->
