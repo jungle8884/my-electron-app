@@ -1,0 +1,110 @@
+x 160000
+Receiving XModem (921600 bps) data to 0x00160000
+CCCCCCCCCCCCCCCCCCCCC
+Starting xmodem transfer.  Press Ctrl+C to cancel.
+Transferring testmode20_2023_0718_1234.bin...
+  100%     205 KB       8 KB/sec    00:00:25       0 Errors  
+
+xyzModem - CRC mode, 1642(SOH)/0(STX)/0(CAN) packets, 2 retries
+210176 (0x00033500) bytes received
+Boot >g 160000
+Goto 0x160000
+PC=0x1601a5
+Initl vcore Volt: 828 mV, reg: 11
+ofst=1, val=12, volt=845
+reg_value_offset: 1
+Calib vcore Volt: 846 mV
+Initial    Volt:  1389 mV
+ofst=1, val=26, volt=1415
+reg_value_offset: 0
+Calibrated Volt:  1389 mV
+set xtal_cap 0x1
+set xtal_cap_fine 0x3
+setchan:5610
+DEBUG: freq=5610, comp_bits=0
+cal start, reg_init=4, i_pa_init=117, i_pa_target=120
+reg_val=5, i_pa=125
+cal done, offset_res=0, i_pa_res=117
+cal_ipa_5g offset=0
+setchan:2442
+cal start, reg_init=4, i_pa_init=120, i_pa_target=105
+reg_val=3, i_pa=108
+reg_val=2, i_pa=99
+cal done, offset_res=-1, i_pa_res=108
+cal_ipa_24g offset=-1
+320M mdll duty: 52
+280M mdll duty: 5c
+setchan:2437
+setchan:5700
+setchan:5250
+setchan:5500
+misc calib single
+loft start
+loft end
+dpd start
+dpd end
+misc calib single end
+setchan:5500
+setchan:2437
+==================================================================================
+        ___  _ __       _  _   _    _  _          _     _        _  _ 
+        //_`/_`/   /|,// // | /_`  / `/ //|,//|,//_//|// |  //|//_`/ /
+       //_,._//   /  //_//_.'/_,  /_,/_//  //  // // |/_.' // |/  /_/
+__________________________________________________________________________________
+cmd:
+    ----------+----------+---------+----------------+--------------------
+    |  cmd    |   arg1   |   arg2  |      arg3      |      arg4         |
+    ----------+----------+---------+----------------+-------------------+
+    | setch   |  ch_num  |    /    |       /        |                   |
+    |         |          |         |                |                   |
+    | setrate |  format  |   rate  | preamble or gi |                   |
+    |         |          |         |                |                   |
+    | setbw   |   chbw   |   sigbw |  sec20below    |   sec40below      |
+    |         |          |         |                |                   |
+    | settx   |  tx_num  |    /    |       /        |                   |
+    |         |          |         |                |                   |
+    | setrx   |    /     |    /    |       /        |                   |
+    ----------+----------+---------+-------------------------------------
+    ch_num:
+            2.4g: 1  -  13   5g: 36 - 165
+    format: 
+            0: NON-HT  2: HT-MF  4: VHT  5: HE-SU
+    rate: 
+            NON-HT-11b    0: 1 Mbps   1:  2 Mbps   2: 5.5 Mbps  3: 11 Mbps
+            NON-HT-11a    4: 6 Mbps   5:  9 Mbps   6:  12 Mbps  7: 18 Mbps
+                          8: 24 Mbps  9: 36 Mbps  10:  48 Mbps 11: 54 Mbps
+            HT/VHT        HT: 0~7, VHT: 0~9
+    preamble:
+            NON-HT-11b    0: short  2: long 
+    gi:
+            HT/VHT        0: long   1: short
+_________________________________________________________________________________
+example:
+    case 1: tx-11n-mcs7-bw80m-chan36        case 2: tx-11b-short-11m-2.412g
+      settx 0                               settx 0                  
+      setch 36                              setch 1                  
+      setbw 2 2 0 0                         setbw 0 0 0 0              
+      setrate 2 7                           setrate 0 3 0            
+      settx 100000                          settx 100000             
+    case 3: rx-bw40-center-freq-2.422g
+      setch 3
+      setbw 1 1 0 0
+      setrx 
+=================================  v1.0  ========================================
+asic_ver=0x7
+vif_mgmt_register:1,0,0,0,0
+sta_mgmt_register: sta_idx=0
+mac is:55330088, 8b77, p2p=0
+set mac:55330088,8d77, mask:0,600,p2p=0
+vif_mgmt_register:2,0,0,0,1
+ 10d0d
+v6.9.1.0 - build: zh Jul 18 2023 12:35:03 - g638bf00
+DEBUG: freq=2412, comp_bits=2
+setchan:2412
+setchan:2412
+misc calib single
+loft start
+loft end
+dpd start
+dpd end
+misc calib single end

@@ -1,11 +1,17 @@
 // Enhanced renderer.js
 // Add auto-download feature for testing purposes
 window.addEventListener('load', () => {
-  // Auto-trigger firmware download after 2 seconds
-  setTimeout(() => {
-    console.log('Auto-triggering firmware download...');
-    document.getElementById('downloadFireWareBtn').click();
-  }, 2000);
+  // Get the auto-execute checkbox element
+  const autoExecuteCheckbox = document.getElementById('autoExecuteCheckbox');
+  
+  // Check if the checkbox is checked
+  if (autoExecuteCheckbox && autoExecuteCheckbox.checked) {
+    // Auto-trigger firmware download after 2 seconds
+    setTimeout(() => {
+      console.log('Auto-triggering firmware download...');
+      document.getElementById('downloadFireWareBtn').click();
+    }, 2000);
+  }
 });
 
 const readBtn = document.getElementById('readBtn');

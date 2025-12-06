@@ -95,17 +95,8 @@ ipcMain.handle('test-orders', async (event) => {
     // 4. 关闭串口
     await serialManager.closePort();
     
-    // 5. 格式化测试结果
-    let formattedResults = 'Test commands executed successfully\n\n';
-    testResults.forEach(result => {
-      formattedResults += `Send command: ${result.command}\n`;
-      formattedResults += `Response: ${result.response}\n\n`;
-    });
-    
-    return { 
-      success: true, 
-      content: formattedResults 
-    };
+    // 5. 返回测试结果
+    return testResults;
     
   } catch (error) {
     console.error('Test commands execution failed:', error);

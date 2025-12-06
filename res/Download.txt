@@ -1,0 +1,218 @@
+// 优化 flashFirmware 函数
+bool CJungleDlg::flashFirmware() {
+    try {
+        LogMessage(_T("开始烧录固件..."));
+        
+        // 清除串口缓冲区中的残留数据
+        m_serialPort.Flush();
+        
+        // 发送命令开始XModem接收，地址为0x160000
+        std::string command = "x 160000\r\n";
+        LogMessage(_T("发送命令: ") + CString(command.c_str()));
+        
+        if (!m_serialPort.SendCommand(command)) {
+            LogMessage(_T("发送命令失败!"));
+            return false;
+        }
+        
+        // 等待设备准备就绪
+        LogMessage(_T("等待设备准备就绪..."));
+        
+        // 读取并显示设备的初始响应
+        CString response;
+        bool deviceReady = false;
+        int retryCount = 0;
+        const int maxRetries = 30; // 增加重试次数，确保有足够时间等待设备响应
+        CString accumulatedResponse; // 累积响应，用于检查连续的C字符
+        
+        while (!deviceReady && retryCount < maxRetries) {
+            // 等待一段时间再读取
+            Sleep(200); // 减少单次等待时间
+            
+            // 尝试读取设备响应
+            response = m_serialPort.ReceiveResponse(256);
+            
+            if (!response.IsEmpty()) {
+                LogMessage(_T("设备响应: ") + response);
+                accumulatedResponse += response;
+                
+                // 检查累积的响应中是否包含足够的C字符
+                // XModem协议中，设备发送C字符表示准备接收数据
+                if (accumulatedResponse.GetLength() >= 2 && 
+                    accumulatedResponse.Find(_T("CC")) >= 0) {
+                    LogMessage(_T("设备已准备就绪，开始传输文件"));
+                    deviceReady = true;
+                }
+                
+                // 检查是否包含"Receiving XModem"字符串
+                if (response.Find(_T("Receiving XModem")) >= 0) {
+                    LogMessage(_T("设备已进入XModem接收模式"));
+                    // 再等一下，确保设备完全准备好
+                    Sleep(500);
+                    deviceReady = true;
+                }
+            }
+            
+            retryCount++;
+        }
+        
+        if (!deviceReady) {
+            LogMessage(_T("设备未准备就绪，超时!"));
+            return false;
+        }
+        
+        // 发送固件文件
+        std::string firmwarePath = "res/testmode20_2023_0718_1234.bin";
+        LogMessage(_T("开始发送固件文件: ") + CString(firmwarePath.c_str()));
+        
+        if (!m_serialPort.SendFileXModem(firmwarePath.c_str())) {
+            LogMessage(_T("发送固件文件失败!"));
+            return false;
+        }
+        
+        LogMessage(_T("固件文件发送完成"));
+        
+        // 等待一段时间，确保设备处理完固件
+        LogMessage(_T("等待设备处理固件..."));
+        Sleep(3000); // 增加等待时间，确保设备有足够时间处理固件
+        
+        // 清除串口缓冲区
+        m_serialPort.Flush();
+        
+        // 发送命令进入测试模式
+        std::string executeCommand = "g 160000\r\n";
+        LogMessage(_T("发送执行命令: ") + CString(executeCommand.c_str()));
+        
+        if (!m_serialPort.SendCommand(executeCommand)) {
+            LogMessage(_T("发送执行命令失败!"));
+            return false;
+        }
+        
+        // 等待并检查设备对执行命令的响应
+        LogMessage(_T("等待设备进入测试模式..."));
+        
+        // 等待设备完全启动测试模式
+        bool testModeReady = false;
+        retryCount = 0;
+        const int maxTestModeRetries = 60; // 最多等待60次，每次1秒，总共60秒
+        
+        // 用于累积响应，检查是否包含测试模式启动完成的标志
+        CString accumulatedTestModeResponse;
+        CString macInfo, setMacInfo, versionInfo;
+        
+        while (!testModeReady && retryCount < maxTestModeRetries) {
+            Sleep(1000); // 每次等待1秒
+            
+            // 读取设备响应
+            response = m_serialPort.ReceiveResponse(1024); // 增加缓冲区大小，以接收更多数据
+            
+            if (!response.IsEmpty()) {
+                // 只显示前100个字符，避免日志过长
+                LogMessage(_T("设备响应: ") + response.Left(100) + _T("..."));
+                accumulatedTestModeResponse += response;
+                
+                // 提取mac信息
+                if (macInfo.IsEmpty()) {
+                    int macPos = accumulatedTestModeResponse.Find(_T("mac is:"));
+                    if (macPos >= 0) {
+                        int endPos = accumulatedTestModeResponse.Find(_T("\r\n"), macPos);
+                        if (endPos > macPos) {
+                            macInfo = accumulatedTestModeResponse.Mid(macPos, endPos - macPos);
+                            LogMessage(_T("检测到MAC信息: ") + macInfo);
+                        }
+                    }
+                }
+                
+                // 提取set mac信息
+                if (setMacInfo.IsEmpty()) {
+                    int setMacPos = accumulatedTestModeResponse.Find(_T("set mac:"));
+                    if (setMacPos >= 0) {
+                        int endPos = accumulatedTestModeResponse.Find(_T("\r\n"), setMacPos);
+                        if (endPos > setMacPos) {
+                            setMacInfo = accumulatedTestModeResponse.Mid(setMacPos, endPos - setMacPos);
+                            LogMessage(_T("检测到Set MAC信息: ") + setMacInfo);
+                        }
+                    }
+                }
+                
+                // 优化版本号检测部分
+                if (versionInfo.IsEmpty()) {
+                    // 查找以 'v' 开头，后跟数字和点的版本号格式
+                    int versionPos = accumulatedTestModeResponse.Find(_T("v"));
+                    while (versionPos >= 0) {
+                        // 检查 'v' 后面是否跟着数字
+                        if (versionPos + 1 < accumulatedTestModeResponse.GetLength()) {
+                            TCHAR nextChar = accumulatedTestModeResponse.GetAt(versionPos + 1);
+                            if (_istdigit(nextChar)) {
+                                // 找到了版本号的开头，现在找到版本号的结尾
+                                int endPos = versionPos + 1;
+                                while (endPos < accumulatedTestModeResponse.GetLength()) {
+                                    TCHAR currentChar = accumulatedTestModeResponse.GetAt(endPos);
+                                    // 版本号可以包含数字和点
+                                    if (_istdigit(currentChar) || currentChar == '.') {
+                                        endPos++;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                
+                                // 提取版本号
+                                versionInfo = accumulatedTestModeResponse.Mid(versionPos, endPos - versionPos);
+                                LogMessage(_T("检测到版本信息: ") + versionInfo);
+                                break;
+                            }
+                        }
+                        
+                        // 继续查找下一个 'v'
+                        versionPos = accumulatedTestModeResponse.Find(_T("v"), versionPos + 1);
+                    }
+                }
+
+                
+                // 检查是否所有关键信息都已检测到
+                if (!macInfo.IsEmpty() && !setMacInfo.IsEmpty() && !versionInfo.IsEmpty() && !testModeReady) {
+                    LogMessage(_T("测试模式已完全启动，所有关键信息已检测到"));
+                    testModeReady = true;
+                }
+                
+                // 检查是否包含测试模式启动完成的标志
+                if (accumulatedTestModeResponse.Find(_T("misc calib single end")) >= 0) {
+                    LogMessage(_T("检测到测试模式启动完成标志"));
+                    // 如果所有关键信息都已检测到，则认为测试模式已完全启动
+                    if (!macInfo.IsEmpty() && !setMacInfo.IsEmpty() && !versionInfo.IsEmpty()) {
+                        testModeReady = true;
+                    }
+                }
+            }
+            
+            retryCount++;
+        }
+        
+        if (!testModeReady) {
+            LogMessage(_T("测试模式启动超时!"));
+            
+            // 输出缺失的信息
+            if (macInfo.IsEmpty()) LogMessage(_T("缺失: MAC信息"));
+            if (setMacInfo.IsEmpty()) LogMessage(_T("缺失: Set MAC信息"));
+            if (versionInfo.IsEmpty()) LogMessage(_T("缺失: 版本信息"));
+            
+            return false;
+        }
+        
+        LogMessage(_T("固件烧录成功，测试模式已启动"));
+        return true;
+    }
+    catch (const std::exception& e) {
+        CString errorMsg;
+        const char* what = e.what();  // 获取异常信息
+        if (what != nullptr) {
+            errorMsg.Format(_T("错误: %s"), CString(what));
+        }
+        else {
+            errorMsg = _T("错误: 未知异常");
+        }
+        LogMessage(errorMsg);
+
+        return false;
+    }
+}

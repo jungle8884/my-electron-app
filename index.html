@@ -13,12 +13,31 @@
 </head>
 <body>
   <p id="info"></p>
+  
+  <div>
+    <input type="checkbox" id="readCheckbox">
+    <label for="readCheckbox">读取文件</label>
+  </div>
   <button id="readBtn">读取文件</button>
   <div id="result"></div>
+  
+  <div>
+    <input type="checkbox" id="downloadCheckbox" checked>
+    <label for="downloadCheckbox">下载固件</label>
+  </div>
   <button id="downloadFireWareBtn" title="下载固件">下载固件</button>
   <div id="downloadFireWareResult"></div>
+  
+  <div>
+    <input type="checkbox" id="testCheckbox" checked>
+    <label for="testCheckbox">测试指令</label>
+  </div>
   <button id="testOrdersBtn" title="测试指令">测试指令</button>
   <div id="testOrdersResult"></div>
+  
+  <div>
+    <button id="executeAllBtn" title="依次执行选中的功能">依次执行选中的功能</button>
+  </div>
 
   <!-- 引入外部渲染进程脚本 -->
   <script src="./renderer.js"></script>

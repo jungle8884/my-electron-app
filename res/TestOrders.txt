@@ -1,0 +1,23 @@
+# gpioa0 发送 -> gpiob0 接收
+
+## gpioa0 发送, 先重置为低电平再发送高电平
+#### 置为低电平
+gpioa 0 1 0    
+### # 发送高电平         
+gpioa 0 1 1             
+## gpiob0 接收, 高电平 
+gpiob 0 0              
+### gpiob0 接收指令, 得到响应: gpiob0 input 1 
+
+## gpioa0 发送, 低电平
+gpioa 0 1 0
+## gpiob0 接收, 低电平 
+gpiob 0 0              
+### 接收指令, 得到响应: gpiob0 input 0
+
+## gpioa0 发送：高电平
+### 发送高电平
+gpioa 0 1 1           
+## gpiob0 接收, 高电平 
+gpioa 0 0             
+### 接收指令, 得到响应: gpiob0 input 1

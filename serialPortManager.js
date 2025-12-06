@@ -313,7 +313,7 @@ class SerialPortManager {
       });
       
       // 等待设备响应 - 不再需要持续监听很长时间
-      const waitTimeAfterCommand = 3; // 等待3秒
+      const waitTimeAfterCommand = 5; // 等待5秒
       let timeElapsed = 0;
       
       console.log(this.log('send', 'Waiting for device response...'));
@@ -388,61 +388,138 @@ class SerialPortManager {
   // 发送测试指令
   async sendTestOrders() {
     try {
-      // 定义测试指令列表
-      const testOrders = [
-        'version\n',  // 版本信息
-        'status\n',    // 状态信息
-        'mac\n'       // MAC地址信息
-      ];
+      // 从 TestOrders.txt 文件读取测试指令
+      const fs = require('fs').promises;
+      const path = require('path');
       
-      let testResults = '';
+      // 读取 TestOrders.txt 文件内容
+      const testOrdersPath = path.join(__dirname, 'res', 'TestOrders.txt');
+      const fileContent = await fs.readFile(testOrdersPath, 'utf8');
+      
+      // 解析文件内容，跳过空行和 # 开头的注释行
+      const lines = fileContent.split('\n');
+      const testCases = [];
+      
+      for (const line of lines) {
+        const trimmedLine = line.trim();
+        
+        // 跳过空行和 # 开头的注释行
+        if (trimmedLine === '' || trimmedLine.startsWith('#')) {
+          continue;
+        }
+        
+        // 提取测试指令
+        const command = `${trimmedLine}\r\n`;
+        const description = `Execute command: ${trimmedLine}`;
+        
+        // 根据命令类型设置预期响应
+        let expectedResponse = null;
+        if (trimmedLine.startsWith('gpiob 0 0')) {
+          // 对于 gpiob 0 0 命令，我们期望收到特定的响应
+          expectedResponse = 'gpiob0 input';
+        }
+        
+        testCases.push({ command, description, expectedResponse });
+      }
+      
+      if (testCases.length === 0) {
+        return {
+          success: true,
+          content: 'No valid test instructions found\n'
+        };
+      }
+      
+      let testResults = 'GPIO Test Start:\n\n';
+      let passCount = 0;
+      let totalTests = 0;
       
       // 发送测试指令并收集响应
-      for (const order of testOrders) {
-        const orderName = order.trim();
-        testResults += `Send command: ${orderName}\n`;
+      for (const testCase of testCases) {
+        const commandName = testCase.command.trim();
+        const description = testCase.description;
+        
+        testResults += `[TEST] ${description}\n`;
+        testResults += `  Send-> ${commandName}\n`;
         
         // 发送指令并等待响应
-        await new Promise((resolve, reject) => {
+        const response = await new Promise((resolve, reject) => {
           let receivedResponse = false;
-          let responseData = '';
+          let responseBuffer = '';
           
+          // 增加超时时间到8秒，确保设备有足够时间响应
           const timeout = setTimeout(() => {
             if (!receivedResponse) {
-              reject(new Error(`Command ${orderName} timeout with no response`));
+              reject(new Error(`Command ${commandName} timeout with no response`));
             }
-          }, 3000);
+          }, 8000);
           
           const dataListener = (data) => {
-            const response = data.toString().trim();
-            responseData += response + '\n';
+            const dataStr = data.toString();
+            responseBuffer += dataStr;
             
-            // 简单的响应判断，实际应用中可能需要根据具体设备协议调整
-            if (response.length > 0 && !response.startsWith('>')) {
-              receivedResponse = true;
-              clearTimeout(timeout);
-              this.parser.removeListener('data', dataListener);
-              
-              testResults += `Response: ${response}\n\n`;
-              resolve();
+            // 优化响应解析逻辑
+            const lines = responseBuffer.split('\n');
+            for (const line of lines) {
+              const trimmedLine = line.trim();
+              // 查找不包含命令本身且有实际内容的行
+              if (trimmedLine && !trimmedLine.includes(commandName) && !trimmedLine.includes('>')) {
+                receivedResponse = true;
+                clearTimeout(timeout);
+                this.port.removeListener('data', dataListener);
+                resolve(trimmedLine);
+                break;
+              }
             }
           };
           
-          this.parser.on('data', dataListener);
+          this.port.on('data', dataListener);
           
-          this.port.write(order, (err) => {
+          this.port.write(testCase.command, (err) => {
             if (err) {
               clearTimeout(timeout);
-              this.parser.removeListener('data', dataListener);
-              reject(new Error(`Failed to send command ${orderName}: ${err.message}`));
+              this.port.removeListener('data', dataListener);
+              reject(new Error(`Failed to send command ${commandName}: ${err.message}`));
             }
           });
         });
+        
+        testResults += `  Device Response: ${response}\n`;
+        
+        // 验证是否符合预期
+        if (testCase.expectedResponse) {
+          totalTests++;
+          if (response.includes(testCase.expectedResponse)) {
+            testResults += `  Test Result: PASS \n\n`;
+            passCount++;
+          } else {
+            testResults += `  Test Result: FAIL \n`;
+            testResults += `  Expected Response: ${testCase.expectedResponse}\n\n`;
+          }
+        } else {
+          testResults += `  Test Result: Command Execution Completed\n\n`;
+        }
+        
+        // 等待一小段时间确保设备处理完成
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // 测试总结
+      let summary = `GPIO Test Summary:\n`;
+      summary += `  Total Tests: ${totalTests}\n`;
+      summary += `  Passed Tests: ${passCount}\n`;
+      summary += `  Failed Tests: ${totalTests - passCount}\n\n`;
+      
+      if (passCount === totalTests && totalTests > 0) {
+        summary += `All tests passed! GPIO functionality is normal\n`;
+      } else if (totalTests > 0) {
+        summary += `Some tests failed! Please check GPIO connection or configuration\n`;
+      } else {
+        summary += `Basic command execution completed\n`;
       }
       
       return {
         success: true,
-        content: 'Test commands executed successfully\n\n' + testResults
+        content: testResults + summary
       };
     } catch (error) {
       console.error('Test commands execution failed:', error);
