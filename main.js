@@ -90,13 +90,13 @@ ipcMain.handle('test-orders', async (event) => {
     await serialManager.openPort();
     
     // 3. 发送测试命令并等待响应
-    const testResults = await serialManager.sendTestOrders();
+    const responseData = await serialManager.sendTestOrders();
     
     // 4. 关闭串口
     await serialManager.closePort();
     
     // 5. 返回测试结果
-    return testResults;
+    return responseData;
     
   } catch (error) {
     console.error('Test commands execution failed:', error);

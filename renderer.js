@@ -124,10 +124,19 @@ testOrdersBtn.addEventListener('click', async () => {
       // Format display text (preserve line breaks)
       testOrdersResultDiv.style.whiteSpace = 'pre-wrap';
       testOrdersResultDiv.textContent = `Test result:\n${response.content}`;
+      // executeAllBtn 测试通过则显示PASS, 颜色为绿色
+      executeAllBtn.style.display = 'block';
+      executeAllBtn.style.backgroundColor = 'green';
+      executeAllBtn.textContent = 'PASS';
+
     } else {
       // Error style prompt
       testOrdersResultDiv.style.color = 'red';
       testOrdersResultDiv.textContent = `Error: ${response.error}`;
+      // executeAllBtn 测试失败则显示FAIL, 颜色为红色
+      executeAllBtn.style.display = 'block';
+      executeAllBtn.style.backgroundColor = 'red';
+      executeAllBtn.textContent = 'FAIL';
     }
   } catch (err) {
     // Catch communication exceptions
