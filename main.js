@@ -29,6 +29,9 @@ function createWindow() {
     }
   });
 
+  // 窗口最大化
+  mainWindow.maximize();
+
   mainWindow.loadFile('index.html'); // 加载渲染进程页面
 }
 
