@@ -23,6 +23,9 @@ new Vue({
     readLoading: false,
     readResult: '',
     readError: false,
+    // 保存文件功能
+    saveLoading: false,
+    canSave: false,
     // 下载固件功能
     downloadLoading: false,
     downloadResult: '',
@@ -86,6 +89,8 @@ new Vue({
           // 更新配置信息
           const configData = JSON.parse(response.content);
           this.config = configData;
+          // 读取成功后可以保存
+          this.canSave = true;
         } else {
           this.readError = true;
           this.readResult = `错误: ${response.error}`;
@@ -95,6 +100,33 @@ new Vue({
         this.readResult = `通信错误: ${err.message}`;
       } finally {
         this.readLoading = false;
+      }
+    },
+    
+    // 保存文件功能
+    async saveFile() {
+      this.saveLoading = true;
+      
+      try {
+        if (!window.electronAPI || typeof window.electronAPI.saveFile !== 'function') {
+          this.$message.error('当前环境不支持文件保存功能（请在Electron应用中运行）');
+          return;
+        }
+        
+        const configContent = JSON.stringify(this.config, null, 2);
+        const response = await window.electronAPI.saveFile('./config.json', configContent);
+        
+        if (response.success) {
+          this.$message.success('配置文件保存成功！');
+          // 更新读取结果显示
+          this.readResult = `配置文件已保存:\n${configContent}`;
+        } else {
+          this.$message.error(`保存失败: ${response.error}`);
+        }
+      } catch (err) {
+        this.$message.error(`通信错误: ${err.message}`);
+      } finally {
+        this.saveLoading = false;
       }
     },
     

@@ -45,6 +45,20 @@ ipcMain.handle('read-file-request', async (event, filePath) => {
   }
 });
 
+// 监听渲染进程的「保存文件」请求
+try {
+  ipcMain.handle('save-file-request', async (event, filePath, content) => {
+    try {
+      await fs.writeFile(filePath, content, 'utf8');
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+} catch (error) {
+  console.log('Error adding save-file-request handler:', error);
+}
+
 /** Read res\testmode20_2023_0718_1234.bin firmware and download via XModem
  * Steps:
  * 1 Read config.json configuration file, open serial port configuration

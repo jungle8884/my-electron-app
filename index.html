@@ -28,24 +28,16 @@
             <span slot="title">配置信息</span>
           </el-menu-item>
           <el-menu-item index="2">
-            <i class="el-icon-document"></i>
-            <span slot="title">读取文件</span>
-          </el-menu-item>
-          <el-menu-item index="3">
             <i class="el-icon-download"></i>
             <span slot="title">下载固件</span>
           </el-menu-item>
-          <el-menu-item index="4">
+          <el-menu-item index="3">
             <i class="el-icon-check"></i>
-            <span slot="title">测试指令</span>
+            <span slot="title">SDIO测试</span>
           </el-menu-item>
-          <el-menu-item index="5">
-            <i class="el-icon-message"></i>
-            <span slot="title">测试结果</span>
-          </el-menu-item>
-          <el-menu-item index="6">
-            <i class="el-icon-delete"></i>
-            <span slot="title">清除日志</span>
+          <el-menu-item index="4">
+            <i class="el-icon-refresh"></i>
+            <span slot="title">重置</span>
           </el-menu-item>
         </el-menu>
       </el-aside>
@@ -67,62 +59,85 @@
             style="margin-bottom: 20px;"
           ></el-alert>
           
-          <!-- 配置信息面板 -->
+          <!-- 配置信息面板（包含配置信息和读取文件） -->
           <el-card v-show="activePanel === '1'" style="margin-bottom: 20px;">
             <div slot="header" class="clearfix">
-              <span>串口配置信息</span>
+              <span>配置信息</span>
             </div>
-            <div class="config-item">
-              <span class="config-label">串口:</span>
-              <span class="config-value">{{ config.Serial }}</span>
+            
+            <!-- 配置信息部分 -->
+            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+              <h3 style="margin-bottom: 15px; color: #606266;">串口配置</h3>
+              <el-form label-width="80px" label-position="left">
+                <el-form-item label="串口">
+                  <el-input v-model="config.Serial" placeholder="请输入串口名称，如COM12"></el-input>
+                </el-form-item>
+                <el-form-item label="波特率">
+                  <el-input v-model="config.BaudRate" placeholder="请输入波特率，如921600"></el-input>
+                </el-form-item>
+                <el-form-item label="数据位">
+                  <el-select v-model="config.DataBits" placeholder="请选择数据位">
+                    <el-option label="5" value="5"></el-option>
+                    <el-option label="6" value="6"></el-option>
+                    <el-option label="7" value="7"></el-option>
+                    <el-option label="8" value="8"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="停止位">
+                  <el-select v-model="config.StopBits" placeholder="请选择停止位">
+                    <el-option label="1" value="1"></el-option>
+                    <el-option label="1.5" value="1.5"></el-option>
+                    <el-option label="2" value="2"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="校验位">
+                  <el-select v-model="config.Parity" placeholder="请选择校验位">
+                    <el-option label="None" value="None"></el-option>
+                    <el-option label="Odd" value="Odd"></el-option>
+                    <el-option label="Even" value="Even"></el-option>
+                    <el-option label="Mark" value="Mark"></el-option>
+                    <el-option label="Space" value="Space"></el-option>
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="固件文件">
+                  <el-input v-model="config.Bin" placeholder="请输入固件文件名，如testmode20_2023_0718_1234.bin"></el-input>
+                </el-form-item>
+                <el-form-item label="测试指令">
+                  <el-input v-model="config.TestOrders" placeholder="请输入测试指令文件名，如TestOrders.txt"></el-input>
+                </el-form-item>
+              </el-form>
             </div>
-            <div class="config-item">
-              <span class="config-label">波特率:</span>
-              <span class="config-value">{{ config.BaudRate }}</span>
+            
+            <!-- 读取文件部分 -->
+            <div>
+              <h3 style="margin-bottom: 15px; color: #606266;">读取配置文件</h3>
+              <div style="margin-bottom: 20px;">
+                <el-button 
+                  type="primary" 
+                  @click="readFile" 
+                  :loading="readLoading"
+                  title="读取配置文件"
+                >
+                  读取文件
+                </el-button>
+                <el-button 
+                  type="success" 
+                  @click="saveFile" 
+                  :loading="saveLoading"
+                  :disabled="!canSave"
+                  title="保存配置文件"
+                >
+                  保存文件
+                </el-button>
+              </div>
+              <el-scrollbar class="log-area">
+                <pre :class="readError ? 'error-text' : ''">{{ readResult }}</pre>
+              </el-scrollbar>
             </div>
-            <div class="config-item">
-              <span class="config-label">数据位:</span>
-              <span class="config-value">{{ config.DataBits }}</span>
-            </div>
-            <div class="config-item">
-              <span class="config-label">停止位:</span>
-              <span class="config-value">{{ config.StopBits }}</span>
-            </div>
-            <div class="config-item">
-              <span class="config-label">校验位:</span>
-              <span class="config-value">{{ config.Parity }}</span>
-            </div>
-            <div class="config-item">
-              <span class="config-label">固件文件:</span>
-              <span class="config-value">{{ config.Bin }}</span>
-            </div>
-            <div class="config-item">
-              <span class="config-label">测试指令:</span>
-              <span class="config-value">{{ config.TestOrders }}</span>
-            </div>
-          </el-card>
-          
-          <!-- 读取文件面板 -->
-          <el-card v-show="activePanel === '2'" style="margin-bottom: 20px;">
-            <div slot="header" class="clearfix">
-              <span>读取文件</span>
-            </div>
-            <el-button 
-              type="primary" 
-              @click="readFile" 
-              :loading="readLoading"
-              title="读取配置文件"
-              style="margin-bottom: 20px;"
-            >
-              读取文件
-            </el-button>
-            <el-scrollbar class="log-area">
-              <pre :class="readError ? 'error-text' : ''">{{ readResult }}</pre>
-            </el-scrollbar>
           </el-card>
           
           <!-- 下载固件面板 -->
-          <el-card v-show="activePanel === '3'" style="margin-bottom: 20px;">
+          <el-card v-show="activePanel === '2'" style="margin-bottom: 20px;">
             <div slot="header" class="clearfix">
               <span>下载固件</span>
             </div>
@@ -140,50 +155,54 @@
             </el-scrollbar>
           </el-card>
           
-          <!-- 测试指令面板 -->
+          <!-- SDIO测试面板（包含测试指令和测试结果） -->
+          <el-card v-show="activePanel === '3'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>SDIO测试</span>
+            </div>
+            
+            <!-- 测试指令部分 -->
+            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee;">
+              <h3 style="margin-bottom: 15px; color: #606266;">执行测试指令</h3>
+              <el-button 
+                type="warning" 
+                @click="testOrders" 
+                :loading="testLoading"
+                title="执行测试指令"
+                style="margin-bottom: 20px;"
+              >
+                测试指令
+              </el-button>
+              <el-scrollbar class="log-area">
+                <pre :class="testError ? 'error-text' : ''">{{ testResult }}</pre>
+              </el-scrollbar>
+            </div>
+            
+            <!-- 测试结果部分 -->
+            <div>
+              <h3 style="margin-bottom: 15px; color: #606266;">测试结果</h3>
+              <el-button 
+                type="info" 
+                @click="showTestResult" 
+                :disabled="!testButtonVisible"
+                :class="testResultPass ? 'success-text' : 'error-text'"
+                title="查看测试结果"
+                style="margin-bottom: 20px;"
+              >
+                {{ testResultPass ? '测试通过' : '测试失败' }}
+              </el-button>
+              <div v-if="testResult" class="log-area" style="padding: 10px; background: #f5f7fa; border-radius: 4px;">
+                <pre :class="testError ? 'error-text' : 'success-text'">测试结果：{{ testResultPass ? '通过' : '失败' }}
+{{ testResult }}</pre>
+              </div>
+              <div v-else style="color: #909399; padding: 20px; text-align: center;">暂无测试结果</div>
+            </div>
+          </el-card>
+          
+          <!-- 重置面板（包含清除日志） -->
           <el-card v-show="activePanel === '4'" style="margin-bottom: 20px;">
             <div slot="header" class="clearfix">
-              <span>测试指令</span>
-            </div>
-            <el-button 
-              type="warning" 
-              @click="testOrders" 
-              :loading="testLoading"
-              title="执行测试指令"
-              style="margin-bottom: 20px;"
-            >
-              测试指令
-            </el-button>
-            <el-scrollbar class="log-area">
-              <pre :class="testError ? 'error-text' : ''">{{ testResult }}</pre>
-            </el-scrollbar>
-          </el-card>
-          
-          <!-- 测试结果面板 -->
-          <el-card v-show="activePanel === '5'" style="margin-bottom: 20px;">
-            <div slot="header" class="clearfix">
-              <span>测试结果</span>
-            </div>
-            <el-button 
-              type="info" 
-              @click="showTestResult" 
-              :disabled="!testButtonVisible"
-              :class="testResultPass ? 'success-text' : 'error-text'"
-              title="查看测试结果"
-              style="margin-bottom: 20px;"
-            >
-              {{ testResultPass ? '测试通过' : '测试失败' }}
-            </el-button>
-            <div v-if="testResult" class="log-area" style="padding: 10px; background: #f5f7fa; border-radius: 4px;">
-              <pre :class="testError ? 'error-text' : 'success-text'">{{ testResult }}</pre>
-            </div>
-            <div v-else style="color: #909399; padding: 20px; text-align: center;">暂无测试结果</div>
-          </el-card>
-          
-          <!-- 清除日志面板 -->
-          <el-card v-show="activePanel === '6'" style="margin-bottom: 20px;">
-            <div slot="header" class="clearfix">
-              <span>清除日志</span>
+              <span>重置</span>
             </div>
             <el-button 
               type="danger" 
