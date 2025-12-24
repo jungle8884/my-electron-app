@@ -15,135 +15,191 @@
 </head>
 <body>
   <div id="app">
-    <!-- 标题栏 -->
-    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">AIC8800-SDIO口测试工具</h1>
-    
-    <!-- 状态信息 -->
-    <el-card class="status-bar">
-      <el-alert
-        :title="info"
-        type="info"
-        show-icon
-        :closable="false"
-      ></el-alert>
-    </el-card>
-    
-    <!-- 配置信息 -->
-    <el-card class="config-section">
-      <div slot="header" class="clearfix">
-        <span>串口配置信息</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">串口:</span>
-        <span class="config-value">{{ config.Serial }}</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">波特率:</span>
-        <span class="config-value">{{ config.BaudRate }}</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">数据位:</span>
-        <span class="config-value">{{ config.DataBits }}</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">停止位:</span>
-        <span class="config-value">{{ config.StopBits }}</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">校验位:</span>
-        <span class="config-value">{{ config.Parity }}</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">固件文件:</span>
-        <span class="config-value">{{ config.Bin }}</span>
-      </div>
-      <div class="config-item">
-        <span class="config-label">测试指令:</span>
-        <span class="config-value">{{ config.TestOrders }}</span>
-      </div>
-    </el-card>
-    
-    <!-- 功能按钮区域 -->
-    <el-card>
-      <div slot="header" class="clearfix">
-        <span>功能模块</span>
-      </div>
-      <div class="function-buttons">
-        <el-button 
-          type="primary" 
-          @click="readFile" 
-          :loading="readLoading"
-          title="读取配置文件"
+    <el-container style="height: 100vh; border: 1px solid #eee;">
+      <!-- 侧边栏 -->
+      <el-aside width="200px" style="background-color: rgb(238, 241, 246);">
+        <el-menu
+          default-active="1"
+          class="el-menu-vertical-demo"
+          @select="handleMenuSelect"
         >
-          读取文件
-        </el-button>
-        <el-button 
-          type="success" 
-          @click="downloadFireWare" 
-          :loading="downloadLoading"
-          title="下载固件到设备"
-        >
-          下载固件
-        </el-button>
-        <el-button 
-          type="warning" 
-          @click="testOrders" 
-          :loading="testLoading"
-          title="执行测试指令"
-        >
-          测试指令
-        </el-button>
-        <el-button 
-          type="info" 
-          @click="showTestResult" 
-          :disabled="!testButtonVisible"
-          :class="testResultPass ? 'success-text' : 'error-text'"
-          title="查看测试结果"
-        >
-          {{ testResultPass ? '测试通过' : '测试失败' }}
-        </el-button>
-        <el-button 
-          type="danger" 
-          @click="clearLogs"
-          title="清除所有日志"
-        >
-          清除日志
-        </el-button>
-      </div>
-    </el-card>
-    
-    <!-- 结果显示区域 -->
-    <div class="result-section">
-      <!-- 读取文件结果 -->
-      <el-card>
-        <div slot="header" class="clearfix">
-          <span>文件读取结果</span>
-        </div>
-        <el-scrollbar class="log-area">
-          <pre :class="readError ? 'error-text' : ''">{{ readResult }}</pre>
-        </el-scrollbar>
-      </el-card>
+          <el-menu-item index="1">
+            <i class="el-icon-info"></i>
+            <span slot="title">配置信息</span>
+          </el-menu-item>
+          <el-menu-item index="2">
+            <i class="el-icon-document"></i>
+            <span slot="title">读取文件</span>
+          </el-menu-item>
+          <el-menu-item index="3">
+            <i class="el-icon-download"></i>
+            <span slot="title">下载固件</span>
+          </el-menu-item>
+          <el-menu-item index="4">
+            <i class="el-icon-check"></i>
+            <span slot="title">测试指令</span>
+          </el-menu-item>
+          <el-menu-item index="5">
+            <i class="el-icon-message"></i>
+            <span slot="title">测试结果</span>
+          </el-menu-item>
+          <el-menu-item index="6">
+            <i class="el-icon-delete"></i>
+            <span slot="title">清除日志</span>
+          </el-menu-item>
+        </el-menu>
+      </el-aside>
       
-      <!-- 下载固件结果 -->
-      <el-card>
-        <div slot="header" class="clearfix">
-          <span>固件下载结果</span>
-        </div>
-        <el-scrollbar class="log-area">
-          <pre :class="downloadError ? 'error-text' : ''">{{ downloadResult }}</pre>
-        </el-scrollbar>
-      </el-card>
-      
-      <!-- 测试指令结果 -->
-      <el-card>
-        <div slot="header" class="clearfix">
-          <span>测试指令结果</span>
-        </div>
-        <el-scrollbar class="log-area">
-          <pre :class="testError ? 'error-text' : ''">{{ testResult }}</pre>
-        </el-scrollbar>
-      </el-card>
-    </div>
+      <el-container>
+        <!-- 顶部栏 -->
+        <el-header style="background-color: #fff; border-bottom: 1px solid #eee; padding: 0 20px;">
+          <h1 style="margin: 0; line-height: 60px; color: #2c3e50; font-size: 20px;">AIC8800-SDIO口测试工具</h1>
+        </el-header>
+        
+        <!-- 主内容区域 -->
+        <el-main style="padding: 20px;">
+          <!-- 状态信息 -->
+          <el-alert
+            :title="info"
+            type="info"
+            show-icon
+            :closable="false"
+            style="margin-bottom: 20px;"
+          ></el-alert>
+          
+          <!-- 配置信息面板 -->
+          <el-card v-show="activePanel === '1'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>串口配置信息</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">串口:</span>
+              <span class="config-value">{{ config.Serial }}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">波特率:</span>
+              <span class="config-value">{{ config.BaudRate }}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">数据位:</span>
+              <span class="config-value">{{ config.DataBits }}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">停止位:</span>
+              <span class="config-value">{{ config.StopBits }}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">校验位:</span>
+              <span class="config-value">{{ config.Parity }}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">固件文件:</span>
+              <span class="config-value">{{ config.Bin }}</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">测试指令:</span>
+              <span class="config-value">{{ config.TestOrders }}</span>
+            </div>
+          </el-card>
+          
+          <!-- 读取文件面板 -->
+          <el-card v-show="activePanel === '2'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>读取文件</span>
+            </div>
+            <el-button 
+              type="primary" 
+              @click="readFile" 
+              :loading="readLoading"
+              title="读取配置文件"
+              style="margin-bottom: 20px;"
+            >
+              读取文件
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="readError ? 'error-text' : ''">{{ readResult }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- 下载固件面板 -->
+          <el-card v-show="activePanel === '3'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>下载固件</span>
+            </div>
+            <el-button 
+              type="success" 
+              @click="downloadFireWare" 
+              :loading="downloadLoading"
+              title="下载固件到设备"
+              style="margin-bottom: 20px;"
+            >
+              下载固件
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="downloadError ? 'error-text' : ''">{{ downloadResult }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- 测试指令面板 -->
+          <el-card v-show="activePanel === '4'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>测试指令</span>
+            </div>
+            <el-button 
+              type="warning" 
+              @click="testOrders" 
+              :loading="testLoading"
+              title="执行测试指令"
+              style="margin-bottom: 20px;"
+            >
+              测试指令
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="testError ? 'error-text' : ''">{{ testResult }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- 测试结果面板 -->
+          <el-card v-show="activePanel === '5'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>测试结果</span>
+            </div>
+            <el-button 
+              type="info" 
+              @click="showTestResult" 
+              :disabled="!testButtonVisible"
+              :class="testResultPass ? 'success-text' : 'error-text'"
+              title="查看测试结果"
+              style="margin-bottom: 20px;"
+            >
+              {{ testResultPass ? '测试通过' : '测试失败' }}
+            </el-button>
+            <div v-if="testResult" class="log-area" style="padding: 10px; background: #f5f7fa; border-radius: 4px;">
+              <pre :class="testError ? 'error-text' : 'success-text'">{{ testResult }}</pre>
+            </div>
+            <div v-else style="color: #909399; padding: 20px; text-align: center;">暂无测试结果</div>
+          </el-card>
+          
+          <!-- 清除日志面板 -->
+          <el-card v-show="activePanel === '6'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>清除日志</span>
+            </div>
+            <el-button 
+              type="danger" 
+              @click="clearLogs"
+              title="清除所有日志"
+              style="margin-bottom: 20px;"
+            >
+              清除日志
+            </el-button>
+            <div style="color: #606266; padding: 20px; background: #f5f7fa; border-radius: 4px;">
+              点击上方按钮可清除所有功能模块的执行日志
+            </div>
+          </el-card>
+        </el-main>
+      </el-container>
+    </el-container>
   </div>
 
   <!-- 引入外部渲染进程脚本 -->

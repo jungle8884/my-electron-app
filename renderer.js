@@ -7,6 +7,8 @@ new Vue({
   data: {
     // 应用信息
     info: '',
+    // 当前激活的面板
+    activePanel: '1',
     // 配置信息
     config: {
       Serial: '',
@@ -183,6 +185,11 @@ new Vue({
       }).catch(() => {
         this.$message.info('已取消清除');
       });
+    },
+    
+    // 处理菜单选择
+    handleMenuSelect(key, keyPath) {
+      this.activePanel = key;
     }
   }
 });
