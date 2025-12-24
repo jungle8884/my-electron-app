@@ -2,370 +2,147 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AIC8800-SDIO口测试</title>
   <!-- 引入Vue -->
   <script src="./js/vue.js"></script>
   <!-- 引入Element UI CSS -->
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- 引入自定义CSS -->
+  <link rel="stylesheet" href="./styles.css">
   <!-- 引入Element UI JS -->
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-  <style>
-    /* 重置Element UI样式，避免样式冲突 */
-    .el-card {
-      margin-bottom: 0 !important;
-    }
-    
-    /* 确保应用窗口充满整个屏幕 */
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #f5f7fa;
-    }
-    
-    /* 确保容器充满整个应用窗口 */
-    .container {
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-      margin: 0;
-      padding: 20px;
-      border-radius: 0;
-      box-shadow: none;
-      background-color: #fff;
-      overflow-y: auto;
-    }
-    
-    /* 调整功能组样式，避免Element UI样式冲突 */
-    .function-group {
-      border: 1px solid #e1e4e8 !important;
-      border-radius: 6px !important;
-      background-color: #fafbfc !important;
-      margin-bottom: 20px !important;
-      padding: 15px !important;
-    }
-  </style>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Microsoft YaHei', Arial, sans-serif;
-      background-color: #f5f7fa;
-      color: #333;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .container {
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-      margin: 0;
-      padding: 20px;
-      border-radius: 0;
-      box-shadow: none;
-      background-color: #fff;
-      overflow-y: auto;
-      box-sizing: border-box;
-    }
-    
-    @media (max-width: 768px) {
-      .container {
-        padding: 10px;
-      }
-    }
-    
-    @media (min-width: 1200px) {
-      .container {
-        padding: 30px;
-      }
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #2c3e50;
-      font-size: 24px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    #info {
-      text-align: center;
-      margin-bottom: 20px;
-      padding: 10px;
-      background-color: #f8f9fa;
-      border-radius: 4px;
-      font-size: 14px;
-      width: 100%;
-      box-sizing: border-box;
-      word-break: break-word;
-    }
-    
-    @media (max-width: 768px) {
-      h1 {
-        font-size: 20px;
-        margin-bottom: 15px;
-      }
-      
-      #info {
-        font-size: 12px;
-        margin-bottom: 15px;
-        padding: 8px;
-      }
-    }
-    
-    @media (min-width: 1200px) {
-      h1 {
-        font-size: 28px;
-        margin-bottom: 25px;
-      }
-      
-      #info {
-        font-size: 16px;
-        margin-bottom: 25px;
-        padding: 12px;
-      }
-    }
-
-    .function-group {
-      margin-bottom: 25px;
-      padding: 15px;
-      border: 1px solid #e1e4e8;
-      border-radius: 6px;
-      background-color: #fafbfc;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .function-header {
-      display: flex;
-      align-items: center;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .function-checkbox {
-      margin-right: 10px;
-      cursor: pointer;
-    }
-
-    .function-label {
-      margin-right: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    .function-btn {
-      padding: 8px 16px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background-color 0.3s;
-      flex-shrink: 0;
-    }
-
-    .function-btn:hover {
-      background-color: #0056b3;
-    }
-
-    .function-btn:active {
-      background-color: #004085;
-    }
-    
-    @media (max-width: 768px) {
-      .function-group {
-        margin-bottom: 15px;
-        padding: 10px;
-      }
-      
-      .function-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-      }
-      
-      .function-label {
-        font-size: 14px;
-        margin-right: 0;
-      }
-      
-      .function-btn {
-        padding: 6px 12px;
-        font-size: 13px;
-        width: 100%;
-      }
-    }
-    
-    @media (min-width: 1200px) {
-      .function-group {
-        padding: 20px;
-        margin-bottom: 30px;
-      }
-      
-      .function-label {
-        font-size: 18px;
-      }
-      
-      .function-btn {
-        padding: 10px 20px;
-        font-size: 16px;
-      }
-    }
-
-    .result-div {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: white;
-      border: 1px solid #e1e4e8;
-      border-radius: 4px;
-      min-height: 50px;
-      font-family: Consolas, Monaco, 'Courier New', monospace;
-      font-size: 13px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      overflow-y: auto;
-      max-height: 200px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    .execute-section {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #e1e4e8;
-      width: 100%;
-      box-sizing: border-box;
-    }
-
-    #executeAllBtn {
-      padding: 10px 30px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 500;
-      transition: background-color 0.3s;
-      min-width: 100px;
-    }
-
-    #executeAllBtn:hover {
-      background-color: #218838;
-    }
-
-    #executeAllBtn:active {
-      background-color: #1e7e34;
-    }
-
-    #executeAllBtn:disabled {
-      background-color: #6c757d;
-      cursor: not-allowed;
-    }
-    
-    @media (max-width: 768px) {
-      .result-div {
-        margin-top: 8px;
-        padding: 8px;
-        font-size: 12px;
-        max-height: 150px;
-      }
-      
-      .execute-section {
-        margin-top: 20px;
-        padding-top: 15px;
-      }
-      
-      #executeAllBtn {
-        padding: 8px 24px;
-        font-size: 14px;
-        width: 100%;
-        max-width: 200px;
-      }
-    }
-    
-    @media (min-width: 1200px) {
-      .result-div {
-        padding: 15px;
-        font-size: 14px;
-        max-height: 250px;
-      }
-      
-      .execute-section {
-        margin-top: 40px;
-        padding-top: 25px;
-      }
-      
-      #executeAllBtn {
-        padding: 12px 36px;
-        font-size: 18px;
-      }
-    }
-  </style>
 </head>
 <body>
-  <div class="container" id="app">
-    <!-- <h1>Electron测试工具</h1>
-    <p id="info">{{ info }}</p> -->
+  <div id="app">
+    <!-- 标题栏 -->
+    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 20px;">AIC8800-SDIO口测试工具</h1>
     
-    <!-- 读取文件功能 -->
-    <div class="function-group">
-      <div class="function-header">
-        <label for="readCheckbox" class="function-label">读取文件</label>
-        <input type="checkbox" id="autoReadCheckbox" v-model="autoRead" class="function-checkbox" title="自动读取文件">
-        <button @click="readFile" :disabled="readLoading" class="function-btn">{{ readLoading ? 'Reading...' : '读取文件' }}</button>
+    <!-- 状态信息 -->
+    <el-card class="status-bar">
+      <el-alert
+        :title="info"
+        type="info"
+        show-icon
+        :closable="false"
+      ></el-alert>
+    </el-card>
+    
+    <!-- 配置信息 -->
+    <el-card class="config-section">
+      <div slot="header" class="clearfix">
+        <span>串口配置信息</span>
       </div>
-      <div :style="{ color: readError ? 'red' : 'inherit' }" class="result-div">{{ readResult }}</div>
-    </div>
-    
-    <!-- 下载固件功能 -->
-    <div class="function-group">
-      <div class="function-header">
-        <label for="downloadCheckbox" class="function-label">下载固件</label>
-        <input type="checkbox" id="autoDownloadCheckbox" v-model="autoDownload" class="function-checkbox" title="自动下载固件">
-        <button @click="downloadFireWare" :disabled="downloadLoading" class="function-btn" title="下载固件">{{ downloadLoading ? 'Downloading...' : '下载固件' }}</button>
+      <div class="config-item">
+        <span class="config-label">串口:</span>
+        <span class="config-value">{{ config.Serial }}</span>
       </div>
-      <div :style="{ color: downloadError ? 'red' : 'inherit' }" class="result-div">{{ downloadResult }}</div>
-    </div>
-    
-    <!-- 测试指令功能 -->
-    <div class="function-group">
-      <div class="function-header">
-        <label for="testCheckbox" class="function-label">测试指令</label>
-        <input type="checkbox" id="autoExecuteCheckbox" v-model="autoExecute" class="function-checkbox" title="自动执行测试指令" checked>
-        <button @click="testOrders" :disabled="testLoading" class="function-btn" title="测试指令">{{ testLoading ? 'Testing...' : '测试指令' }}</button>
+      <div class="config-item">
+        <span class="config-label">波特率:</span>
+        <span class="config-value">{{ config.BaudRate }}</span>
       </div>
-      <div :style="{ color: testError ? 'red' : 'inherit' }" class="result-div">{{ testResult }}</div>
-    </div>
+      <div class="config-item">
+        <span class="config-label">数据位:</span>
+        <span class="config-value">{{ config.DataBits }}</span>
+      </div>
+      <div class="config-item">
+        <span class="config-label">停止位:</span>
+        <span class="config-value">{{ config.StopBits }}</span>
+      </div>
+      <div class="config-item">
+        <span class="config-label">校验位:</span>
+        <span class="config-value">{{ config.Parity }}</span>
+      </div>
+      <div class="config-item">
+        <span class="config-label">固件文件:</span>
+        <span class="config-value">{{ config.Bin }}</span>
+      </div>
+      <div class="config-item">
+        <span class="config-label">测试指令:</span>
+        <span class="config-value">{{ config.TestOrders }}</span>
+      </div>
+    </el-card>
     
-    <!-- 显示是否PASS -->
-    <div class="execute-section">
-      <button id="executeAllBtn" title="测试结果" :style="{ display: testButtonVisible ? 'block' : 'none', backgroundColor: testResultPass ? 'green' : 'red' }">
-        {{ testResultPass ? 'PASS' : 'FAIL' }}
-      </button>
+    <!-- 功能按钮区域 -->
+    <el-card>
+      <div slot="header" class="clearfix">
+        <span>功能模块</span>
+      </div>
+      <div class="function-buttons">
+        <el-button 
+          type="primary" 
+          @click="readFile" 
+          :loading="readLoading"
+          title="读取配置文件"
+        >
+          读取文件
+        </el-button>
+        <el-button 
+          type="success" 
+          @click="downloadFireWare" 
+          :loading="downloadLoading"
+          title="下载固件到设备"
+        >
+          下载固件
+        </el-button>
+        <el-button 
+          type="warning" 
+          @click="testOrders" 
+          :loading="testLoading"
+          title="执行测试指令"
+        >
+          测试指令
+        </el-button>
+        <el-button 
+          type="info" 
+          @click="showTestResult" 
+          :disabled="!testButtonVisible"
+          :class="testResultPass ? 'success-text' : 'error-text'"
+          title="查看测试结果"
+        >
+          {{ testResultPass ? '测试通过' : '测试失败' }}
+        </el-button>
+        <el-button 
+          type="danger" 
+          @click="clearLogs"
+          title="清除所有日志"
+        >
+          清除日志
+        </el-button>
+      </div>
+    </el-card>
+    
+    <!-- 结果显示区域 -->
+    <div class="result-section">
+      <!-- 读取文件结果 -->
+      <el-card>
+        <div slot="header" class="clearfix">
+          <span>文件读取结果</span>
+        </div>
+        <el-scrollbar class="log-area">
+          <pre :class="readError ? 'error-text' : ''">{{ readResult }}</pre>
+        </el-scrollbar>
+      </el-card>
+      
+      <!-- 下载固件结果 -->
+      <el-card>
+        <div slot="header" class="clearfix">
+          <span>固件下载结果</span>
+        </div>
+        <el-scrollbar class="log-area">
+          <pre :class="downloadError ? 'error-text' : ''">{{ downloadResult }}</pre>
+        </el-scrollbar>
+      </el-card>
+      
+      <!-- 测试指令结果 -->
+      <el-card>
+        <div slot="header" class="clearfix">
+          <span>测试指令结果</span>
+        </div>
+        <el-scrollbar class="log-area">
+          <pre :class="testError ? 'error-text' : ''">{{ testResult }}</pre>
+        </el-scrollbar>
+      </el-card>
     </div>
   </div>
 

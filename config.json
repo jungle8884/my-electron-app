@@ -1,5 +1,5 @@
 {
-  "Serial": "COM6",
+  "Serial": "COM12",
   "BaudRate": "921600",
   "DataBits": "8",
   "StopBits": "1",

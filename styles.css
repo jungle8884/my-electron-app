@@ -1,0 +1,74 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: 'Microsoft YaHei', Arial, sans-serif;
+  background-color: #f5f7fa;
+  overflow: hidden;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.el-card {
+  margin-bottom: 20px;
+}
+
+.status-bar {
+  margin-bottom: 20px;
+}
+
+.function-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.function-buttons .el-button {
+  min-width: 120px;
+}
+
+.result-section {
+  margin-top: 20px;
+}
+
+.config-section {
+  margin-bottom: 20px;
+}
+
+.config-item {
+  margin-bottom: 10px;
+}
+
+.config-label {
+  font-weight: bold;
+  margin-right: 10px;
+  color: #606266;
+}
+
+.config-value {
+  color: #303133;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+}
+
+.log-area {
+  height: 300px;
+  overflow-y: auto;
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.success-text {
+  color: #67c23a;
+}
+
+.error-text {
+  color: #f56c6c;
+}
