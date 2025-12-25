@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AIC8800-SDIO口测试</title>
+  <title>AIC8800-GPIO口测试</title>
   <!-- 引入Vue -->
   <script src="./js/vue.js"></script>
   <!-- 引入Element UI CSS -->
@@ -33,9 +33,26 @@
           </el-menu-item>
           <el-menu-item index="3">
             <i class="el-icon-check"></i>
-            <span slot="title">SDIO测试</span>
+            <span slot="title">GPIO测试</span>
           </el-menu-item>
-          <el-menu-item index="4">
+          <el-submenu index="4">
+            <template slot="title">
+              <i class="el-icon-wifi"></i>
+              <span>RF测试</span>
+            </template>
+            <el-menu-item index="4-1">SCPI连接/断开</el-menu-item>
+            <el-submenu index="4-2">
+              <template slot="title">校准</template>
+              <el-menu-item index="4-2-1">频偏校准</el-menu-item>
+              <el-menu-item index="4-2-2">功率校准</el-menu-item>
+            </el-submenu>
+            <el-submenu index="4-3">
+              <template slot="title">测试</template>
+              <el-menu-item index="4-3-1">TX测试</el-menu-item>
+              <el-menu-item index="4-3-2">RX测试</el-menu-item>
+            </el-submenu>
+          </el-submenu>
+          <el-menu-item index="5">
             <i class="el-icon-refresh"></i>
             <span slot="title">重置</span>
           </el-menu-item>
@@ -45,7 +62,7 @@
       <el-container>
         <!-- 顶部栏 -->
         <el-header style="background-color: #fff; border-bottom: 1px solid #eee; padding: 0 20px;">
-          <h1 style="margin: 0; line-height: 60px; color: #2c3e50; font-size: 20px;">AIC8800-SDIO口测试工具</h1>
+          <h1 style="margin: 0; line-height: 60px; color: #2c3e50; font-size: 20px;">AIC8800-RF测试</h1>
         </el-header>
         
         <!-- 主内容区域 -->
@@ -200,7 +217,7 @@
           </el-card>
           
           <!-- 重置面板（包含清除日志） -->
-          <el-card v-show="activePanel === '4'" style="margin-bottom: 20px;">
+          <el-card v-show="activePanel === '5'" style="margin-bottom: 20px;">
             <div slot="header" class="clearfix">
               <span>重置</span>
             </div>
@@ -215,6 +232,117 @@
             <div style="color: #606266; padding: 20px; background: #f5f7fa; border-radius: 4px;">
               点击上方按钮可清除所有功能模块的执行日志
             </div>
+          </el-card>
+          
+          <!-- RF测试 - SCPI连接/断开 -->
+          <el-card v-show="activePanel === '4-1'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>SCPI连接/断开</span>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <el-button 
+                type="primary" 
+                @click="connectSCPI" 
+                :loading="scpiLoading"
+                :disabled="scpiConnected"
+                title="连接SCPI"
+              >
+                连接SCPI
+              </el-button>
+              <el-button 
+                type="danger" 
+                @click="disconnectSCPI" 
+                :loading="scpiLoading"
+                :disabled="!scpiConnected"
+                title="断开SCPI"
+              >
+                断开SCPI
+              </el-button>
+              <span style="margin-left: 10px; color: #606266;">
+                状态：<span :class="scpiConnected ? 'success-text' : 'error-text'">
+                  {{ scpiConnected ? '已连接' : '未连接' }}
+                </span>
+              </span>
+            </div>
+            <el-scrollbar class="log-area">
+              <pre :class="scpiError ? 'error-text' : ''">{{ scpiLog }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- RF测试 - 频偏校准 -->
+          <el-card v-show="activePanel === '4-2-1'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>频偏校准</span>
+            </div>
+            <el-button 
+              type="warning" 
+              @click="calibrateFrequency" 
+              :loading="calibLoading"
+              title="执行频偏校准"
+              style="margin-bottom: 20px;"
+            >
+              执行频偏校准
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="calibError ? 'error-text' : ''">{{ frequencyCalibLog }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- RF测试 - 功率校准 -->
+          <el-card v-show="activePanel === '4-2-2'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>功率校准</span>
+            </div>
+            <el-button 
+              type="warning" 
+              @click="calibratePower" 
+              :loading="calibLoading"
+              title="执行功率校准"
+              style="margin-bottom: 20px;"
+            >
+              执行功率校准
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="calibError ? 'error-text' : ''">{{ powerCalibLog }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- RF测试 - TX测试 -->
+          <el-card v-show="activePanel === '4-3-1'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>TX测试</span>
+            </div>
+            <el-button 
+              type="success" 
+              @click="runTxTest" 
+              :loading="testLoading"
+              title="执行TX测试"
+              style="margin-bottom: 20px;"
+            >
+              执行TX测试
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="testError ? 'error-text' : ''">{{ txTestLog }}</pre>
+            </el-scrollbar>
+          </el-card>
+          
+          <!-- RF测试 - RX测试 -->
+          <el-card v-show="activePanel === '4-3-2'" style="margin-bottom: 20px;">
+            <div slot="header" class="clearfix">
+              <span>RX测试</span>
+            </div>
+            <el-button 
+              type="success" 
+              @click="runRxTest" 
+              :loading="testLoading"
+              title="执行RX测试"
+              style="margin-bottom: 20px;"
+            >
+              执行RX测试
+            </el-button>
+            <el-scrollbar class="log-area">
+              <pre :class="testError ? 'error-text' : ''">{{ rxTestLog }}</pre>
+            </el-scrollbar>
           </el-card>
         </el-main>
       </el-container>
